@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { RegisterSchema } from "@/lib/validations/auth";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { RegisterSchema } from '@/lib/validations/auth';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -12,8 +12,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
 
 export function RegisterForm() {
   const [loading, setLoading] = useState(false);
@@ -21,10 +21,10 @@ export function RegisterForm() {
   const form = useForm({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
   });
 
@@ -37,11 +37,10 @@ export function RegisterForm() {
     setLoading(true);
     try {
       // TODO: Replace with actual register API call
-      console.log("Registering user:", formData);
+      console.log('Registering user:', formData);
       await new Promise((res) => setTimeout(res, 1500));
       // TODO: Show success toast or redirect to login
-      // router.push('/login')
-    } catch (err: Error | unknown) {
+    } catch (err) {
       // TODO: Show error toast
       console.error(err);
     } finally {
@@ -59,7 +58,11 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input placeholder="martysupreme" {...field} />
+                <Input
+                  placeholder="martysupreme"
+                  disabled={loading}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -72,7 +75,12 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="m@example.com" {...field} />
+                <Input
+                  type="email"
+                  placeholder="m@example.com"
+                  disabled={loading}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -85,7 +93,12 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  disabled={loading}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -98,15 +111,19 @@ export function RegisterForm() {
             <FormItem>
               <FormLabel>Confirm Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="••••••••" {...field} />
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  disabled={loading}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <Button type="submit" disabled={loading} className="w-full">
-          {loading ? "Creating account..." : "Create Account"}
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? 'Creating account...' : 'Create account'}
         </Button>
       </form>
     </Form>

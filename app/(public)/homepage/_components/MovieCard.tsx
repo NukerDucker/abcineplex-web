@@ -6,7 +6,7 @@ import Image from "next/image";
 interface MovieCardProps {
   id: number;
   title: string;
-  poster: string;
+  banner: string;
   rating: string;
   year: string;
   duration: string;
@@ -16,14 +16,14 @@ interface MovieCardProps {
 
 const MovieCard: React.FC<MovieCardProps> = ({
   title,
-  poster,
+  banner,
   rating,
   year,
   duration,
   audio,
   subtitle,
 }) => {
-  const imageSrc = poster || "";
+  const imageSrc = banner || "";
 
   if (!imageSrc) return null;
 

@@ -6,7 +6,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="relative hidden w-full flex-1 items-center justify-center lg:flex">
         <div
           className="absolute inset-0 z-0 bg-cover bg-center opacity-100"
-          style={{ backgroundImage: 'url("/auth-bg.jpg")' }}
+          style={{ backgroundImage: 'url("/auth-bg.png")' }}
         />
       </div>
 

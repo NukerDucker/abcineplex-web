@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ activeNav = 'home' }) => {
 
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-neutral-200">
-      <div className="max-w-[1400px] mx-auto px-6 py-4">
+      <div className="max-w-350 mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
@@ -37,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ activeNav = 'home' }) => {
           </div>
 
           {/* Main Navigation */}
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-8 no-underline! decoration-none">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeNav === item.id;
@@ -46,14 +46,14 @@ const Header: React.FC<HeaderProps> = ({ activeNav = 'home' }) => {
                     style={{ textDecoration: 'none' }}
                   key={item.id}
                   href={`/${item.id}`}
-                  className={`flex items-center gap-2 transition-colors !no-underline decoration-none ${
+                  className={`flex items-center gap-2 transition-colors no-underline! decoration-none ${
                     isActive
                       ? 'text-black'
                       : 'text-neutral-500 hover:text-black'
                   } `}
                 >
                   <Icon className="w-4 h-4" />
-                  <span className="text-sm tracking-wide font-medium !no-underline decoration-none">{item.label}</span>
+                  <span className="text-sm tracking-wide font-medium no-underline! decoration-none">{item.label}</span>
                 </a>
               );
             })}

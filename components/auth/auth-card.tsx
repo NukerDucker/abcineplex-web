@@ -1,0 +1,58 @@
+'use client';
+
+import Link from 'next/link';
+import { SiGoogle } from '@icons-pack/react-simple-icons';
+import { Button } from '@/components/ui/button';
+
+interface AuthCardProps {
+  children: React.ReactNode;
+  title: string;
+  description: string;
+  oauthLabel?: string;
+  bottomText: string;
+  bottomLink: {
+    label: string;
+    href: string;
+  };
+}
+
+export function AuthCard({
+  children,
+  title,
+  description,
+  oauthLabel = 'Or continue with',
+  bottomText,
+  bottomLink,
+}: AuthCardProps) {
+  return (
+    <div className="rounded-2xl border border-gray-100 p-8 shadow-sm">
+      <div className="mb-6 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <p className="text-sm text-gray-500">{description}</p>
+      </div>
+
+      {children}
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-white px-2 text-gray-500">{oauthLabel}</span>
+        </div>
+      </div>
+
+      <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+        <SiGoogle size={20} />
+        Sign in with Google
+      </Button>
+
+      <p className="mt-6 text-center text-sm text-gray-600">
+        {bottomText}{' '}
+        <Link href={bottomLink.href} className="font-medium text-black underline">
+          {bottomLink.label}
+        </Link>
+      </p>
+    </div>
+  );
+}
