@@ -5,14 +5,14 @@ import { SiGoogle } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
 
 interface AuthCardProps {
-  children: React.ReactNode;
-  title: string;
-  description: string;
-  oauthLabel?: string;
-  bottomText: string;
-  bottomLink: {
-    label: string;
-    href: string;
+  readonly children: React.ReactNode;
+  readonly title: string;
+  readonly description: string;
+  readonly oauthLabel?: string;
+  readonly bottomText: string;
+  readonly bottomLink: {
+    readonly label: string;
+    readonly href: string;
   };
 }
 

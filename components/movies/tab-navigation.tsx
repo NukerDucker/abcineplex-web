@@ -3,8 +3,8 @@
 type TabType = 'now' | 'soon';
 
 interface TabNavigationProps {
-  activeTab: TabType;
-  onTabChange: (tab: TabType) => void;
+  readonly activeTab: TabType;
+  readonly onTabChange: (tab: TabType) => void;
 }
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {

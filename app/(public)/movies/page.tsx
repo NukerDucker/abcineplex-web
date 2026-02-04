@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { COMING_SOON_MOVIES, NOW_SCREENING_MOVIES, type Movie } from '@/lib/constants/movies';
-import { MoviesHeader } from '@/components/movies/movies-header';
+import { Header } from '@/components/ui/navbar';
 import { TabNavigation } from '@/components/movies/tab-navigation';
 import { MoviesGrid } from '@/components/movies/movies-grid';
 
@@ -18,7 +18,7 @@ export default function MoviesPage() {
 
   return (
     <div className="min-h-screen bg-[#e8e8e8]">
-      <MoviesHeader />
+      <Header />
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
       <MoviesGrid movies={currentMovies} onMovieClick={handleMovieClick} />
     </div>

@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import {
   Home,
   Film,
@@ -12,17 +11,17 @@ import {
 } from 'lucide-react';
 
 interface HeaderProps {
-  activeNav?: string;
+  readonly activeNav?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ activeNav = 'home' }) => {
+export function Header({ activeNav = 'home' }: HeaderProps) {
   const navItems = [
     { id: 'homepage', label: 'Home', icon: Home },
     { id: 'movies', label: 'Movies', icon: Film },
-    { id: 'watchlists', label: 'Watchlists', icon: Bookmark },
+    // { id: 'watchlists', label: 'Watchlists', icon: Bookmark },
     { id: 'snacks', label: 'Snacks', icon: Popcorn },
     { id: 'community', label: 'Community', icon: Users },
-    { id: 'rewards', label: 'Rewards', icon: Gift },
+    // { id: 'rewards', label: 'Rewards', icon: Gift },
   ];
 
   return (
@@ -67,6 +66,4 @@ const Header: React.FC<HeaderProps> = ({ activeNav = 'home' }) => {
       </div>
     </nav>
   );
-};
-
-export default Header;
+}

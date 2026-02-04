@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import Header from './_components/Header';
-import HeroCarousel from './_components/HeroCarousel';
-import MoviesSection from './_components/MoviesSection';
-import PromotionalSection from './_components/PromotionalSection';
-import { HERO_MOVIES, NOW_SCREENING_MOVIES, COMING_SOON_MOVIES, PROMO_EVENTS } from './constants';
+import { Header } from '@/components/ui/navbar';
+import { HeroCarousel } from '@/components/homepage/hero-carousel';
+import { MoviesSection } from '@/components/homepage/movies-section';
+import { PromotionalSection } from '@/components/homepage/promotional-section';
+import { HERO_MOVIES, NOW_SCREENING_MOVIES, COMING_SOON_MOVIES, PROMO_EVENTS } from '@/lib/constants/movies';
 
 interface HomepageLayoutProps {
   children: React.ReactNode;

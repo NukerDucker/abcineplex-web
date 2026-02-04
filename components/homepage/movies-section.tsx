@@ -8,6 +8,7 @@ interface Movie {
   readonly id: number;
   readonly title: string;
   readonly poster: string;
+  readonly banner: string;
   readonly rating: string;
   readonly year: string;
   readonly duration: string;
@@ -139,7 +140,7 @@ export function MoviesSection({
                 <HomepageMovieCard
                   id={movie.id}
                   title={movie.title}
-                  banner={movie.poster}
+                  banner={movie.banner}
                   rating={movie.rating}
                   year={movie.year}
                   duration={movie.duration}

@@ -3,12 +3,11 @@
 import type { Movie } from '@/lib/constants/movies';
 
 interface MovieCardProps {
-  movie: Movie;
-  onClick?: () => void;
+  readonly movie: Movie;
+  readonly onClick?: () => void;
 }
 
 export function MovieCard({ movie, onClick }: MovieCardProps) {
-  // Handle missing poster
   if (!movie.poster) {
     return null;
   }
