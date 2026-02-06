@@ -11,16 +11,11 @@ export default function MoviesPage() {
 
   const currentMovies = activeTab === 'soon' ? COMING_SOON_MOVIES : NOW_SCREENING_MOVIES;
 
-  const handleMovieClick = (movie: Movie) => {
-    // TODO: Implement movie detail modal or navigation
-    console.log('Movie clicked:', movie.title);
-  };
-
   return (
     <div className="min-h-screen bg-[#e8e8e8]">
       <Header />
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-      <MoviesGrid movies={currentMovies} onMovieClick={handleMovieClick} />
+      <MoviesGrid movies={currentMovies} />
     </div>
   );
 }

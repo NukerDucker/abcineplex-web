@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -9,12 +10,27 @@ interface HeroMovie {
   readonly title: string;
 }
 
-interface HeroCarouselProps {
-  readonly movies: readonly HeroMovie[];
+interface HeroABClassic {
+  readonly id: number;
+  readonly title: string;
+  readonly banner: string;
+  readonly rating: string;
+  readonly year: string;
+  readonly duration: string;
+  readonly audio: string;
+  readonly subtitle: string;
 }
 
-export function HeroCarousel({ movies }: HeroCarouselProps) {
+interface HeroCarouselProps {
+  readonly abClassic: HeroMovie;
+  readonly recommendedMovie1: HeroMovie;
+  readonly recommendedMovie2: HeroMovie;
+  readonly eventOfTheMonth: HeroMovie;
+}
+
+export function HeroCarousel({ abClassic, recommendedMovie1, recommendedMovie2, eventOfTheMonth }: HeroCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const movies = [abClassic, recommendedMovie1, recommendedMovie2, eventOfTheMonth];
 
   const goToPrevious = () => {
     setCurrentIndex((prev) =>
@@ -29,21 +45,23 @@ export function HeroCarousel({ movies }: HeroCarouselProps) {
   };
 
   return (
-    <div className="relative h-[400px] overflow-hidden bg-neutral-900 group">
+    <div className="relative h-100 overflow-hidden bg-neutral-900 group">
       <div className="flex h-full transition-transform duration-500 ease-out">
         {movies.map((movie, index) => (
           <div
             key={movie.id}
-            className={`relative flex-shrink-0 transition-all duration-500 ${
+            className={`relative shrink-0 transition-all duration-500 ${
               index === currentIndex ? 'w-1/2 md:w-3/5' : 'w-1/6 md:w-[15%]'
             }`}
           >
-            <img
+            <Image
               src={movie.image}
               alt={movie.title}
+              width={1000}
+              height={1000}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
             {index === currentIndex && (
               <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
                 <h2 className="text-3xl font-light tracking-wide">{movie.title}</h2>

@@ -133,7 +133,7 @@ export function MoviesSection({
         <div className="relative">
           <div
             ref={containerRef}
-            className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+            className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hidden"
           >
             {infiniteMovies.map((movie, index) => (
               <div key={`${movie.id}-${index}`} className="flex-shrink-0 w-80">

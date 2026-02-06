@@ -1,5 +1,3 @@
-import { HomepageHeader } from '@/components/homepage';
-
 export default function PublicLayout({
   children,
 }: Readonly<{

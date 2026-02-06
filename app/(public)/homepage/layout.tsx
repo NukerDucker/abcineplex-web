@@ -5,7 +5,14 @@ import { Header } from '@/components/ui/navbar';
 import { HeroCarousel } from '@/components/homepage/hero-carousel';
 import { MoviesSection } from '@/components/homepage/movies-section';
 import { PromotionalSection } from '@/components/homepage/promotional-section';
-import { HERO_MOVIES, NOW_SCREENING_MOVIES, COMING_SOON_MOVIES, PROMO_EVENTS } from '@/lib/constants/movies';
+import { NOW_SCREENING_MOVIES,
+         COMING_SOON_MOVIES,
+         PROMO_EVENTS,
+         AB_CLASSIC_HERO,
+         RECOMMENDED_MOVIE_1_HERO,
+         RECOMMENDED_MOVIE_2_HERO,
+         EVENT_OF_THE_MONTH_HERO
+        } from '@/lib/constants/movies';
 
 interface HomepageLayoutProps {
   children: React.ReactNode;
@@ -19,10 +26,15 @@ const HomepageLayout: React.FC<HomepageLayoutProps> = ({ children }) => {
       <Header activeNav="home" />
 
       {/* Hero Carousel */}
-      <HeroCarousel movies={HERO_MOVIES} />
+      <HeroCarousel
+        abClassic={AB_CLASSIC_HERO}
+        recommendedMovie1={RECOMMENDED_MOVIE_1_HERO}
+        recommendedMovie2={RECOMMENDED_MOVIE_2_HERO}
+        eventOfTheMonth={EVENT_OF_THE_MONTH_HERO}
+      />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-[1400px] mx-auto px-4 sm:px-6 w-full py-12">
+      <main className="flex-1 max-w-350 mx-auto px-4 sm:px-6 w-full">
         {/* Movies Section */}
         <MoviesSection
           nowScreening={NOW_SCREENING_MOVIES}
@@ -45,14 +57,6 @@ const HomepageLayout: React.FC<HomepageLayoutProps> = ({ children }) => {
               <p className="text-sm leading-relaxed">
                 Your premium cinema experience with the latest films and events.
               </p>
-            </div>
-            <div>
-              <h4 className="text-white font-medium mb-4">Quick Links</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition">Movies</a></li>
-                <li><a href="#" className="hover:text-white transition">Bookings</a></li>
-                <li><a href="#" className="hover:text-white transition">Events</a></li>
-              </ul>
             </div>
             <div>
               <h4 className="text-white font-medium mb-4">Support</h4>
