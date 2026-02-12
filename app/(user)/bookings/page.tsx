@@ -148,7 +148,7 @@ export default function BookingHistoryPage() {
           <div className="bg-white rounded-xl p-8 border border-neutral-200 text-center">
             <p className="text-red-600 mb-4">{error}</p>
             <button
-              onClick={() => window.location.reload()}
+              onClick={() => globalThis.location.reload()}
               className="px-6 py-2 bg-black text-white rounded-lg text-sm font-semibold"
             >
               Try Again
@@ -195,17 +195,17 @@ export default function BookingHistoryPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                       <div className="flex items-center gap-2 text-neutral-600">
-                        <Calendar className="w-4 h-4 flex-shrink-0" />
+                        <Calendar className="w-4 h-4 shrink-0" />
                         <span>{formatDate(booking.created_at)}</span>
                       </div>
                       {booking.showtime_start && (
                         <div className="flex items-center gap-2 text-neutral-600">
-                          <Clock className="w-4 h-4 flex-shrink-0" />
+                          <Clock className="w-4 h-4 shrink-0" />
                           <span>{formatTime(booking.showtime_start)}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-neutral-600">
-                        <MapPin className="w-4 h-4 flex-shrink-0" />
+                        <MapPin className="w-4 h-4 shrink-0" />
                         <span>{booking.screen_name}</span>
                       </div>
                     </div>
@@ -224,7 +224,7 @@ export default function BookingHistoryPage() {
                   </div>
 
                   {/* Right: Price */}
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right shrink-0">
                     <p className="text-2xl font-bold text-black">
                       {booking.total_amount.toLocaleString()} <span className="text-sm font-normal text-neutral-500">Baht</span>
                     </p>

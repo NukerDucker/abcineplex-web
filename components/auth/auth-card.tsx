@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { SiGoogle } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
-import { signInWithGoogle } from '@/services/auth-services';
+import { signInWithGoogle } from '@/services/auth';
 
 interface AuthCardProps {
   readonly children: React.ReactNode;

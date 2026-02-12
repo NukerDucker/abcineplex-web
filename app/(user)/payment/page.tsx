@@ -171,7 +171,7 @@ export default function BookingPayment() {
       const result = await bookingsApi.confirmPayment({
         booking_id: Number(bookingId),
         payment_intent_id: paymentMethod === 'card'
-          ? `card_${Date.now()}_${cardNumber.replace(/\s/g, '').slice(-4)}`
+          ? `card_${Date.now()}_${cardNumber.replaceAll(/\s/g, '').slice(-4)}`
           : `promptpay_${Date.now()}`,
       });
 
@@ -307,7 +307,7 @@ export default function BookingPayment() {
             </div>
 
             {/* Mock Payment Button - Quick checkout for testing */}
-            <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl">
+            <div className="mb-6 p-4 bg-linear-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl">
               <p className="text-xs text-emerald-700 font-semibold uppercase tracking-wider mb-3">Quick Checkout (Demo)</p>
               <Button
                 onClick={handlePayment}
