@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import type { Movie } from '@/lib/constants/movies';
+import type { Movie } from '@/types/api';
+import { formatDuration, formatYear, formatLanguages } from '@/types/api';
 
 interface MovieCardProps {
   readonly movie: Movie;
@@ -8,7 +9,7 @@ interface MovieCardProps {
 }
 
 export function MovieCard({ movie, onClick }: MovieCardProps) {
-  if (!movie.poster) {
+  if (!movie.poster_url) {
     return null;
   }
 
@@ -28,7 +29,7 @@ export function MovieCard({ movie, onClick }: MovieCardProps) {
         {/* Movie Poster */}
         <div className="relative overflow-hidden rounded-lg mb-2 sm:mb-4 aspect-[2/3] bg-neutral-900">
           <img
-            src={movie.poster}
+            src={movie.poster_url}
             alt={movie.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
@@ -47,19 +48,19 @@ export function MovieCard({ movie, onClick }: MovieCardProps) {
           <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
             <div>
               <p className="text-neutral-500 uppercase font-semibold mb-0.5">Year</p>
-              <p className="font-medium text-neutral-900">{movie.year}</p>
+              <p className="font-medium text-neutral-900">{formatYear(movie.release_date)}</p>
             </div>
             <div>
               <p className="text-neutral-500 uppercase font-semibold mb-0.5">Duration</p>
-              <p className="font-medium text-neutral-900">{movie.duration}</p>
+              <p className="font-medium text-neutral-900">{formatDuration(movie.duration_minutes)}</p>
             </div>
             <div>
               <p className="text-neutral-500 uppercase font-semibold mb-0.5">Audio</p>
-              <p className="font-medium text-neutral-900">{movie.audio}</p>
+              <p className="font-medium text-neutral-900">{formatLanguages(movie.audio_languages)}</p>
             </div>
             <div>
               <p className="text-neutral-500 uppercase font-semibold mb-0.5">Subtitle</p>
-              <p className="font-medium text-neutral-900">{movie.subtitle}</p>
+              <p className="font-medium text-neutral-900">{formatLanguages(movie.subtitle_languages)}</p>
             </div>
           </div>
         </div>

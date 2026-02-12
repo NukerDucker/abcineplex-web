@@ -3,18 +3,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { HomepageMovieCard } from './homepage-movie-card';
-
-interface Movie {
-  readonly id: number;
-  readonly title: string;
-  readonly poster: string;
-  readonly banner: string;
-  readonly rating: string;
-  readonly year: string;
-  readonly duration: string;
-  readonly audio: string;
-  readonly subtitle: string;
-}
+import type { Movie } from '@/types/api';
 
 interface MoviesSectionProps {
   readonly nowScreening: readonly Movie[];
@@ -137,16 +126,7 @@ export function MoviesSection({
           >
             {infiniteMovies.map((movie, index) => (
               <div key={`${movie.id}-${index}`} className="flex-shrink-0 w-80">
-                <HomepageMovieCard
-                  id={movie.id}
-                  title={movie.title}
-                  banner={movie.banner}
-                  rating={movie.rating}
-                  year={movie.year}
-                  duration={movie.duration}
-                  audio={movie.audio}
-                  subtitle={movie.subtitle}
-                />
+                <HomepageMovieCard movie={movie} />
               </div>
             ))}
           </div>

@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RegisterSchema } from '@/lib/validations/auth';
+import { register } from '@/services/auth-services';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -17,6 +19,8 @@ import { Input } from '@/components/ui/input';
 
 export function RegisterForm() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const form = useForm({
     resolver: zodResolver(RegisterSchema),
@@ -35,14 +39,27 @@ export function RegisterForm() {
     confirmPassword: string;
   }) => {
     setLoading(true);
+    setError(null);
+
     try {
-      // TODO: Replace with actual register API call
-      console.log('Registering user:', formData);
-      await new Promise((res) => setTimeout(res, 1500));
-      // TODO: Show success toast or redirect to login
+      const result = await register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (!result.success) {
+        setError(result.error || 'Registration failed. Please try again.');
+        return;
+      }
+
+      // Registration successful - user is now logged in
+      // Redirect to homepage
+      router.push('/homepage');
+      router.refresh();
     } catch (err) {
-      // TODO: Show error toast
-      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -51,6 +68,11 @@ export function RegisterForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {error && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
         <FormField
           control={form.control}
           name="name"

@@ -3,34 +3,17 @@
 import Image from 'next/image';
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-interface HeroMovie {
-  readonly id: number;
-  readonly image: string;
-  readonly title: string;
-}
-
-interface HeroABClassic {
-  readonly id: number;
-  readonly title: string;
-  readonly banner: string;
-  readonly rating: string;
-  readonly year: string;
-  readonly duration: string;
-  readonly audio: string;
-  readonly subtitle: string;
-}
+import type { HeroSlide } from '@/types/api';
 
 interface HeroCarouselProps {
-  readonly abClassic: HeroMovie;
-  readonly recommendedMovie1: HeroMovie;
-  readonly recommendedMovie2: HeroMovie;
-  readonly eventOfTheMonth: HeroMovie;
+  readonly slides: readonly HeroSlide[];
 }
 
-export function HeroCarousel({ abClassic, recommendedMovie1, recommendedMovie2, eventOfTheMonth }: HeroCarouselProps) {
+export function HeroCarousel({ slides }: HeroCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const movies = [abClassic, recommendedMovie1, recommendedMovie2, eventOfTheMonth];
+
+  // Use passed slides or empty array
+  const movies = slides || [];
 
   const goToPrevious = () => {
     setCurrentIndex((prev) =>
@@ -43,6 +26,7 @@ export function HeroCarousel({ abClassic, recommendedMovie1, recommendedMovie2, 
       prev === movies.length - 1 ? 0 : prev + 1
     );
   };
+
 
   return (
     <div className="relative h-100 overflow-hidden bg-neutral-900 group">

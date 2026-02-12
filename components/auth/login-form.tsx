@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginSchema } from '@/lib/validations/auth';
-import { mockLogin } from '@/services/auth-services';
+import { login } from '@/services/auth-services';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -18,6 +19,8 @@ import { Input } from '@/components/ui/input';
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const form = useForm({
     resolver: zodResolver(LoginSchema),
@@ -32,13 +35,22 @@ export function LoginForm() {
     password: string;
   }) => {
     setLoading(true);
+    setError(null);
+
     try {
-      await mockLogin(formData);
-      // TODO: Show success toast and redirect to dashboard
-      // router.push('/dashboard')
-    } catch (err: Error | unknown) {
-      // TODO: Show error toast
-      console.error(err);
+      const result = await login(formData);
+
+      if (!result.success) {
+        setError(result.error || 'Login failed. Please try again.');
+        return;
+      }
+
+      // Redirect to homepage on success
+      router.push('/homepage');
+      router.refresh();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -47,6 +59,11 @@ export function LoginForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {error && (
+          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
         <FormField
           control={form.control}
           name="email"

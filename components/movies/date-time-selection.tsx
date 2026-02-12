@@ -1,15 +1,17 @@
 'use client';
 
 import React from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import type { BookingDate } from '@/lib/constants/movies';
+
+interface ShowtimeInfo {
+  time: string;
+  showtimeId: number;
+  status: 'available' | 'selected' | 'sold_out' | 'past';
+}
+
+interface DateGroupShowtime extends BookingDate {
+  showtimes: ShowtimeInfo[];
+}
 
 interface DateTimeSelectionProps {
   readonly dates: BookingDate[];
@@ -18,6 +20,7 @@ interface DateTimeSelectionProps {
   readonly selectedTime: string;
   readonly onDateChange: (index: number) => void;
   readonly onTimeChange: (time: string) => void;
+  readonly summarizedShowtimes?: DateGroupShowtime[]; // Alternative prop for grouped data
 }
 
 export function DateTimeSelection({
@@ -27,52 +30,70 @@ export function DateTimeSelection({
   selectedTime,
   onDateChange,
   onTimeChange,
+  summarizedShowtimes,
 }: DateTimeSelectionProps) {
+  // Use grouped showtimes if provided, otherwise create a simple structure
+  const groupedShowtimes: DateGroupShowtime[] = summarizedShowtimes || dates.map((date, index) => ({
+    ...date,
+    showtimes: times.map((time) => ({
+      time,
+      showtimeId: index, // Placeholder ID
+      status:
+        selectedDate === index && selectedTime === time
+          ? 'selected'
+          : 'available',
+    })),
+  }));
+
   return (
     <div className="bg-white rounded-xl p-6 sm:p-8 border border-neutral-300 mb-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-        <div className="flex items-center gap-3 sm:gap-4">
-          <button className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-neutral-200 hover:bg-neutral-300 transition flex items-center justify-center border border-neutral-400 flex-shrink-0">
-            <ChevronLeft className="h-5 w-5 text-black" />
-          </button>
-          <h3 className="text-black font-semibold text-base sm:text-lg uppercase tracking-wider">Date</h3>
-        </div>
-        <div className="flex items-center gap-3 sm:gap-4 justify-start sm:justify-end">
-          <h3 className="text-black font-semibold text-base sm:text-lg uppercase tracking-wider">Time</h3>
-          <Select value={selectedTime} onValueChange={onTimeChange}>
-            <SelectTrigger className="w-[140px] sm:w-[180px] bg-neutral-100 border-neutral-300 text-black">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {times.map((time) => (
-                <SelectItem key={time} value={time}>
-                  {time}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <h3 className="text-black font-bold text-2xl sm:text-3xl uppercase tracking-wider mb-8">
+        SELECT DATE & TIME
+      </h3>
 
-      <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-2">
-        {dates.map((date, index) => (
-          <button
-            key={index}
-            onClick={() => onDateChange(index)}
-            className={`flex-shrink-0 p-3 sm:p-4 rounded-lg sm:rounded-xl transition-all min-w-[70px] sm:min-w-[80px] ${
-              selectedDate === index
-                ? 'bg-black text-white scale-105 shadow-lg shadow-black/20'
-                : 'bg-neutral-100 text-black hover:bg-neutral-200 border border-neutral-300'
-            }`}
-          >
-            <div className="text-xs opacity-70 mb-1">{date.month}</div>
-            <div className="text-2xl sm:text-3xl font-bold mb-1">{date.day}</div>
-            <div className="text-xs opacity-70">{date.dayName}</div>
-          </button>
+      {/* Vertical Chronological Layout */}
+      <div className="space-y-8">
+        {groupedShowtimes.map((dateGroup, dateIndex) => (
+          <div key={dateIndex}>
+            {/* Date Header */}
+            <div
+              onClick={() => onDateChange(dateIndex)}
+              className="cursor-pointer mb-4 transition-all hover:opacity-80"
+            >
+              <h4 className="text-black font-bold text-lg sm:text-xl uppercase tracking-wider">
+                {dateGroup.dayName} {dateGroup.day} {dateGroup.month}
+              </h4>
+            </div>
+
+            {/* Time Slots */}
+            <div className="flex flex-wrap gap-3">
+              {dateGroup.showtimes.map((showtime) => (
+                <button
+                  key={`${dateIndex}-${showtime.time}`}
+                  onClick={() => {
+                    onDateChange(dateIndex);
+                    onTimeChange(showtime.time);
+                  }}
+                  disabled={showtime.status === 'sold_out' || showtime.status === 'past'}
+                  className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base uppercase tracking-wide transition-all ${
+                    showtime.status === 'selected'
+                      ? 'bg-black text-white border-2 border-black'
+                      : showtime.status === 'available'
+                        ? 'bg-white text-black border-2 border-neutral-300 hover:border-black'
+                        : 'bg-neutral-200 text-neutral-500 border-2 border-neutral-300 cursor-not-allowed opacity-50'
+                  }`}
+                >
+                  {showtime.time}
+                </button>
+              ))}
+            </div>
+
+            {/* Divider between date groups */}
+            {dateIndex < groupedShowtimes.length - 1 && (
+              <div className="mt-8 border-t border-neutral-200" />
+            )}
+          </div>
         ))}
-        <button className="flex-shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-neutral-200 hover:bg-neutral-300 transition flex items-center justify-center border border-neutral-400">
-          <ChevronRight className="h-5 w-5 text-black" />
-        </button>
       </div>
     </div>
   );
