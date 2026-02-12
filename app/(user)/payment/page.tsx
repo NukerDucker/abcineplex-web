@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   PaymentMethodSelector,
   CardPaymentForm,
@@ -13,6 +14,7 @@ import {
   type BookingDetails,
 } from '@/components/payment';
 import { bookingsApi, moviesApi, showtimesApi } from '@/services/api';
+import { Zap, CheckCircle } from 'lucide-react';
 
 export default function BookingPayment() {
   const searchParams = useSearchParams();
@@ -33,6 +35,7 @@ export default function BookingPayment() {
   const [cvc, setCvc] = useState('');
   const [saveInfo, setSaveInfo] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   // Booking data state
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
@@ -46,9 +49,11 @@ export default function BookingPayment() {
   const { formatted: countdown, isExpired } = useCountdown({
     deadline: paymentDeadline,
     onExpire: useCallback(() => {
-      alert('Payment time expired. Your reservation has been cancelled.');
-      router.push('/');
-    }, [router]),
+      if (!paymentSuccess) {
+        alert('Payment time expired. Your reservation has been cancelled.');
+        router.push('/');
+      }
+    }, [router, paymentSuccess]),
   });
 
   // Fetch booking details
@@ -65,68 +70,65 @@ export default function BookingPayment() {
         let seats: string[] = [];
         let total = 0;
 
-        // If we have a booking_id, fetch from API
+        // Try to fetch movie & showtime from URL params (always available from seat selection)
+        if (movieId) {
+          try {
+            const movie = await moviesApi.getMovieById(Number(movieId));
+            movieTitle = movie.title;
+            posterUrl = movie.poster_url;
+          } catch {
+            console.error('Failed to fetch movie');
+          }
+        }
+
+        if (showtimeId) {
+          try {
+            const showtime = await showtimesApi.getShowtime(Number(showtimeId));
+            const startDate = new Date(showtime.start_time);
+            showTime = startDate.toLocaleString('en-GB', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+            const endDate = new Date(startDate.getTime() + 150 * 60 * 1000);
+            endTime = endDate.toLocaleTimeString('en-GB', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
+          } catch {
+            console.error('Failed to fetch showtime');
+          }
+        }
+
+        // Also try to fetch booking details from API if booking_id exists
         if (bookingId) {
-          const booking = await bookingsApi.getBooking(Number(bookingId));
-
-          if (booking.payment_deadline) {
-            setPaymentDeadline(new Date(booking.payment_deadline));
-          }
-
-          movieTitle = booking.movie_title || 'Movie';
-          posterUrl = booking.poster_url || '';
-          showTime = booking.showtime_start
-            ? new Date(booking.showtime_start).toLocaleString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-              })
-            : '';
-          endTime = booking.showtime_end
-            ? new Date(booking.showtime_end).toLocaleTimeString('en-GB', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })
-            : '';
-          seats = booking.seats || [];
-          total = booking.total_amount || 0;
-        } else {
-          // Use URL params as fallback (from direct reservation flow)
-          if (movieId) {
-            try {
-              const movie = await moviesApi.getMovieById(Number(movieId));
-              movieTitle = movie.title;
-              posterUrl = movie.poster_url;
-            } catch {
-              console.error('Failed to fetch movie');
+          try {
+            const booking = await bookingsApi.getBooking(Number(bookingId));
+            if (booking.payment_deadline) {
+              setPaymentDeadline(new Date(booking.payment_deadline));
             }
-          }
-
-          if (showtimeId) {
-            try {
-              const showtime = await showtimesApi.getShowtime(Number(showtimeId));
-              const startDate = new Date(showtime.start_time);
-              showTime = startDate.toLocaleString('en-GB', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
+            if (booking.movie_title) movieTitle = booking.movie_title;
+            if (booking.poster_url) posterUrl = booking.poster_url;
+            if (booking.showtime_start) {
+              showTime = new Date(booking.showtime_start).toLocaleString('en-GB', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit',
               });
-              // Estimate end time (add 2.5 hours)
-              const endDate = new Date(startDate.getTime() + 150 * 60 * 1000);
-              endTime = endDate.toLocaleTimeString('en-GB', {
-                hour: '2-digit',
-                minute: '2-digit',
-              });
-            } catch {
-              console.error('Failed to fetch showtime');
             }
+            if (booking.seats && booking.seats.length > 0) seats = booking.seats;
+            if (booking.total_amount) total = booking.total_amount;
+          } catch {
+            console.error('Failed to fetch booking from API, using URL params');
           }
+        }
 
+        // Use URL params as fallback
+        if (seats.length === 0) {
           seats = seatsParam ? seatsParam.split(',') : [];
+        }
+        if (total === 0) {
           total = totalParam ? Number(totalParam) : 0;
         }
 
@@ -162,15 +164,19 @@ export default function BookingPayment() {
     try {
       setIsProcessing(true);
 
-      // Confirm payment via API
+      // Simulate a short processing delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Confirm payment via API (this updates status in Supabase)
       const result = await bookingsApi.confirmPayment({
         booking_id: Number(bookingId),
-        payment_intent_id: `demo_${Date.now()}`, // In production, this comes from payment gateway
+        payment_intent_id: paymentMethod === 'card'
+          ? `card_${Date.now()}_${cardNumber.replace(/\s/g, '').slice(-4)}`
+          : `promptpay_${Date.now()}`,
       });
 
       if (result.success) {
-        alert('Payment successful! Your booking is confirmed.');
-        router.push(`/booking/confirmation?booking_id=${bookingId}`);
+        setPaymentSuccess(true);
       } else {
         alert(`Payment failed: ${result.message}`);
       }
@@ -193,7 +199,6 @@ export default function BookingPayment() {
 
     try {
       await bookingsApi.cancelBooking(Number(bookingId));
-      alert('Booking cancelled.');
       router.push('/');
     } catch (err) {
       console.error('Cancel error:', err);
@@ -201,10 +206,15 @@ export default function BookingPayment() {
     }
   };
 
+  // --- RENDER STATES ---
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
-        <p className="text-lg text-slate-600">Loading booking details...</p>
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-lg text-slate-600">Loading booking details...</p>
+        </div>
       </div>
     );
   }
@@ -225,11 +235,47 @@ export default function BookingPayment() {
     );
   }
 
+  // Payment success screen
+  if (paymentSuccess) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <Card className="border-none shadow-2xl bg-white max-w-md w-full">
+          <CardContent className="p-10 text-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-12 h-12 text-green-600" />
+            </div>
+            <h2 className="text-3xl font-bold mb-2">Payment Successful!</h2>
+            <p className="text-slate-500 mb-2">Booking ID: #{bookingId}</p>
+            <p className="text-slate-600 mb-8">
+              Your tickets for <span className="font-semibold">{bookingDetails.movieTitle}</span> have been confirmed.
+              Seats: <span className="font-semibold">{bookingDetails.seats.join(', ')}</span>
+            </p>
+            <div className="space-y-3">
+              <Button
+                onClick={() => router.push('/bookings')}
+                className="w-full h-12 bg-black text-white hover:bg-slate-800 font-bold rounded-lg"
+              >
+                View My Bookings
+              </Button>
+              <Button
+                onClick={() => router.push('/homepage')}
+                variant="outline"
+                className="w-full h-12 border-slate-300 font-bold rounded-lg"
+              >
+                Back to Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (isExpired) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-lg text-red-600 mb-4">Payment time has expired</p>
+          <p className="text-lg text-red-600 mb-4">Payment time has expired. Your reserved seats have been released.</p>
           <button
             onClick={() => router.push('/')}
             className="px-6 py-2 bg-black text-white rounded-lg"
@@ -258,6 +304,38 @@ export default function BookingPayment() {
               >
                 Cancel
               </button>
+            </div>
+
+            {/* Mock Payment Button - Quick checkout for testing */}
+            <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-200 rounded-xl">
+              <p className="text-xs text-emerald-700 font-semibold uppercase tracking-wider mb-3">Quick Checkout (Demo)</p>
+              <Button
+                onClick={handlePayment}
+                disabled={isProcessing}
+                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white text-lg font-bold rounded-lg transition-all hover:scale-[1.02] disabled:opacity-50"
+              >
+                {isProcessing ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Zap className="w-5 h-5" />
+                    Simulate Payment - {bookingDetails.total.toLocaleString()} Baht
+                  </span>
+                )}
+              </Button>
+              <p className="text-xs text-emerald-600 mt-2 text-center">Click to instantly confirm your booking</p>
+            </div>
+
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-3 text-slate-400 font-semibold">or pay with</span>
+              </div>
             </div>
 
             <PaymentMethodSelector

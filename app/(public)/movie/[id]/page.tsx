@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Header } from '@/components/ui/navbar';
 import { BookingMovieInfo } from '@/components/movies/booking-movie-info';
 import { DateTimeSelection } from '@/components/movies/date-time-selection';
 import { SeatMap } from '@/components/movies/seat-map';
 import { TicketSummary } from '@/components/movies/ticket-summary';
 import { moviesApi, showtimesApi, bookingsApi } from '@/services/api';
+import { useAuth } from '@/context/auth-context';
 
 import Image from 'next/image';
 import type { Movie } from '@/types/api';
@@ -40,6 +41,8 @@ interface Showtime {
 
 export default function MovieBookingPage() {
   const params = useParams();
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
   const movieId = Number(params.id);
 
   // Movie state
@@ -219,13 +222,20 @@ export default function MovieBookingPage() {
   const handleBooking = async () => {
     if (!currentShowtimeId || selectedSeats.length === 0) return;
 
+    // Require login
+    if (!isAuthenticated || !user) {
+      alert('Please sign in to book tickets.');
+      router.push('/login');
+      return;
+    }
+
     try {
       setIsBooking(true);
       const showtime = showtimes.find((s) => s.id === currentShowtimeId);
       const screenId = showtime?.screen_id;
 
       if (!screenId) {
-        alert("Error: Could not determine screen for booking.");
+        alert('Error: Could not determine screen for booking.');
         return;
       }
 
@@ -237,51 +247,49 @@ export default function MovieBookingPage() {
       // Calculate price per seat from the first selected seat or use default
       const pricePerSeat = seats.find(s => s.status === 'selected')?.price || 15;
 
-      // Step 1: Reserve seats
+      // Step 1: Reserve seats via API (starts 5-min countdown in Supabase)
       const reserveResult = await bookingsApi.reserveSeats({
-        user_id: crypto.randomUUID(), // For demo; in production, use authenticated user
+        user_id: user.id,
         screen_id: screenId,
         seat_ids: selectedSeatIds,
-        price_per_seat: pricePerSeat
+        price_per_seat: pricePerSeat,
       });
 
       if (!reserveResult.success || !reserveResult.booking_id) {
         alert(`Reservation failed: ${reserveResult.error || 'Some seats are no longer available'}`);
-        location.reload();
+        // Refresh seats so user sees updated availability
+        const seatsData = await showtimesApi.getSeats(currentShowtimeId);
+        if (seatsData && seatsData.length > 0) {
+          setSeats(seatsData.map((s) => ({
+            id: s.seat_id,
+            row: s.row_label,
+            col: s.seat_number,
+            status: s.status?.toLowerCase() === 'available' ? 'available' as const : 'reserved' as const,
+            price: s.price,
+          })));
+        }
         return;
       }
 
-      // Show payment deadline
-      const deadline = reserveResult.payment_deadline ? new Date(reserveResult.payment_deadline) : new Date();
-      const shouldConfirmPayment = confirm(
-        `Seats reserved! Total: $${reserveResult.total_amount}\n` +
-        `Payment deadline: ${deadline.toLocaleTimeString()}\n\n` +
-        `Click OK to confirm payment.`
-      );
+      // Step 2: Navigate to payment page with booking info
+      const seatLabels = seats
+        .filter(s => s.status === 'selected')
+        .map(s => `${s.row}${s.col}`)
+        .join(',');
 
-      if (!shouldConfirmPayment) {
-        // Cancel the booking
-        await bookingsApi.cancelBooking(reserveResult.booking_id);
-        alert("Booking cancelled.");
-        location.reload();
-        return;
-      }
-
-      // Step 2: Confirm payment
-      const paymentResult = await bookingsApi.confirmPayment({
-        booking_id: reserveResult.booking_id
+      const params = new URLSearchParams({
+        booking_id: String(reserveResult.booking_id),
+        movie_id: String(movieId),
+        showtime_id: String(currentShowtimeId),
+        seats: seatLabels,
+        total: String(reserveResult.total_amount || seatsTotalPrice),
+        deadline: reserveResult.payment_deadline ? new Date(reserveResult.payment_deadline).toISOString() : '',
       });
 
-      if (paymentResult.success) {
-        alert(`Booking Confirmed! Booking ID: ${reserveResult.booking_id}`);
-      } else {
-        alert(`Payment failed: ${paymentResult.message}`);
-      }
-
-      location.reload();
+      router.push(`/payment?${params.toString()}`);
     } catch (error) {
-      console.error("Booking failed", error);
-      alert("Booking failed. Please try again.");
+      console.error('Booking failed', error);
+      alert('Booking failed. Please try again.');
     } finally {
       setIsBooking(false);
     }

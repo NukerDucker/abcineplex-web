@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { SiGoogle } from '@icons-pack/react-simple-icons';
 import { Button } from '@/components/ui/button';
@@ -26,24 +25,11 @@ export function AuthCard({
   bottomText,
   bottomLink,
 }: AuthCardProps) {
-  const [oauthLoading, setOauthLoading] = useState(false);
-  const [oauthError, setOauthError] = useState<string | null>(null);
-
   const handleGoogleSignIn = async () => {
-    setOauthLoading(true);
-    setOauthError(null);
-
     try {
-      const result = await signInWithGoogle();
-      if (!result.success) {
-        setOauthError(result.error || 'Failed to sign in with Google');
-      }
-      // If successful, Supabase will redirect to the callback URL
+      await signInWithGoogle();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      setOauthError(errorMessage);
-    } finally {
-      setOauthLoading(false);
+      console.error('Google sign-in error:', err);
     }
   };
 
@@ -65,20 +51,13 @@ export function AuthCard({
         </div>
       </div>
 
-      {oauthError && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {oauthError}
-        </div>
-      )}
-
       <Button
         variant="outline"
         className="w-full flex items-center justify-center gap-2"
         onClick={handleGoogleSignIn}
-        disabled={oauthLoading}
       >
         <SiGoogle size={20} />
-        {oauthLoading ? 'Signing in...' : 'Sign in with Google'}
+        Sign in with Google
       </Button>
 
       <p className="mt-6 text-center text-sm text-gray-600">

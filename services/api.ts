@@ -1,4 +1,5 @@
 import type { Movie } from '@/types/api';
+import { createClient } from '@/lib/supabase/client';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
@@ -21,18 +22,33 @@ export interface APISeat {
   price?: number;
 }
 
-// Helper function to make API calls
+// Helper function to make API calls with optional Supabase auth
 async function apiCall<T>(
   endpoint: string,
-  options?: RequestInit
+  options?: RequestInit & { authenticated?: boolean }
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options?.headers as Record<string, string>),
+  };
+
+  // Attach Supabase access token for authenticated requests
+  if (options?.authenticated !== false) {
+    try {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) {
+        headers['Authorization'] = `Bearer ${data.session.access_token}`;
+      }
+    } catch {
+      // Silently continue without auth if session retrieval fails
+    }
+  }
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {
@@ -129,6 +145,7 @@ export interface BookingDetailResponse {
   poster_url?: string;
   showtime_start?: string;
   showtime_end?: string;
+  showtime_id?: number;
 }
 
 export const bookingsApi = {
@@ -157,8 +174,15 @@ export const bookingsApi = {
   getBooking: (bookingId: number): Promise<BookingDetailResponse> =>
     apiCall<BookingDetailResponse>(`/api/bookings/${bookingId}`),
 
-  // Get user's bookings
+  // Get user's bookings (uses auth token)
   getUserBookings: (userId: string, status?: string) => {
+    const params = status ? `?status=${status}` : '';
+    // Use /me endpoint which extracts user from auth token
+    return apiCall(`/api/bookings/me${params}`, { authenticated: true });
+  },
+
+  // Get user's bookings by user ID (fallback)
+  getUserBookingsById: (userId: string, status?: string) => {
     const params = status ? `?status=${status}` : '';
     return apiCall(`/api/bookings/user/${userId}/bookings${params}`);
   },

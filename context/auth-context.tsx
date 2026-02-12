@@ -9,91 +9,84 @@ import {
   useMemo,
   type ReactNode,
 } from 'react';
-import {
-  getCurrentUser,
-  logout as authLogout,
-  getStoredUser,
-  getStoredToken,
-  type AuthUser,
-} from '@/services/auth-services';
+import { createClient } from '@/lib/supabase/client';
+import type { User, Session } from '@supabase/supabase-js';
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  user_name?: string;
+  full_name?: string;
+}
 
 interface AuthContextType {
   user: AuthUser | null;
+  session: Session | null;
   loading: boolean;
   isAuthenticated: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
+function mapUser(user: User): AuthUser {
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    user_name: user.user_metadata?.user_name,
+    full_name: user.user_metadata?.full_name,
+  };
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const supabase = useMemo(() => createClient(), []);
+
   const refreshUser = useCallback(async () => {
-    try {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
-    } catch {
-      setUser(null);
-    }
-  }, []);
+    const { data } = await supabase.auth.getUser();
+    setUser(data.user ? mapUser(data.user) : null);
+  }, [supabase]);
 
   useEffect(() => {
-    // Get initial user from storage
+    // Get initial session
     const initAuth = async () => {
-      const token = getStoredToken();
-
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-
-      // Try to get user from storage first for faster initial load
-      const storedUser = getStoredUser();
-      if (storedUser) {
-        setUser(storedUser);
-      }
-
-      // Then verify with backend
-      try {
-        const currentUser = await getCurrentUser();
-        setUser(currentUser);
-      } catch {
-        setUser(null);
-      }
-
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      setSession(currentSession);
+      setUser(currentSession?.user ? mapUser(currentSession.user) : null);
       setLoading(false);
     };
 
     initAuth();
 
-    // Listen for storage changes (for multi-tab support)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'auth_token' || e.key === 'auth_user') {
-        initAuth();
+    // Listen for auth state changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ? mapUser(newSession.user) : null);
+        setLoading(false);
       }
-    };
-
-    globalThis.addEventListener('storage', handleStorageChange);
+    );
 
     return () => {
-      globalThis.removeEventListener('storage', handleStorageChange);
+      subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
 
   const signOut = useCallback(async () => {
-    await authLogout();
+    await supabase.auth.signOut();
     setUser(null);
-  }, []);
+    setSession(null);
+  }, [supabase]);
 
-  const isAuthenticated = useMemo(() => !!user, [user]);
+  const isAuthenticated = useMemo(() => !!session, [session]);
 
   const value = useMemo(
-    () => ({ user, loading, isAuthenticated, signOut, refreshUser }),
-    [user, loading, isAuthenticated, signOut, refreshUser]
+    () => ({ user, session, loading, isAuthenticated, signOut, refreshUser }),
+    [user, session, loading, isAuthenticated, signOut, refreshUser]
   );
 
   return (

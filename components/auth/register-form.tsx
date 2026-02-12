@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RegisterSchema } from '@/lib/validations/auth';
-import { register } from '@/services/auth-services';
+import { signUp } from '@/services/auth-services';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 export function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const router = useRouter();
 
   const form = useForm({
@@ -40,30 +41,36 @@ export function RegisterForm() {
   }) => {
     setLoading(true);
     setError(null);
-
     try {
-      const result = await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
+      const { session } = await signUp(formData.email, formData.password, {
+        user_name: formData.name,
+        full_name: formData.name,
       });
 
-      if (!result.success) {
-        setError(result.error || 'Registration failed. Please try again.');
-        return;
+      if (session) {
+        // Auto-confirmed — redirect to homepage
+        router.push('/homepage');
+        router.refresh();
+      } else {
+        // Email confirmation required
+        setSuccess(true);
       }
-
-      // Registration successful - user is now logged in
-      // Redirect to homepage
-      router.push('/homepage');
-      router.refresh();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Registration failed';
+      setError(message);
     } finally {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="rounded-md bg-green-50 p-4 text-sm text-green-700">
+        <p className="font-medium">Check your email!</p>
+        <p>We&apos;ve sent a confirmation link to your email address. Please verify to continue.</p>
+      </div>
+    );
+  }
 
   return (
     <Form {...form}>

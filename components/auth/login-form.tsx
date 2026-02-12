@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginSchema } from '@/lib/validations/auth';
-import { login } from '@/services/auth-services';
+import { signIn } from '@/services/auth-services';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -36,21 +36,13 @@ export function LoginForm() {
   }) => {
     setLoading(true);
     setError(null);
-
     try {
-      const result = await login(formData);
-
-      if (!result.success) {
-        setError(result.error || 'Login failed. Please try again.');
-        return;
-      }
-
-      // Redirect to homepage on success
+      await signIn(formData.email, formData.password);
       router.push('/homepage');
       router.refresh();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      setError(errorMessage);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Invalid credentials';
+      setError(message);
     } finally {
       setLoading(false);
     }
