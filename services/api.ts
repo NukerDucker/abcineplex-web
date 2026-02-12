@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 // Showtime type
-export interface Showtime {
+interface Showtime {
   id: number;
   movie_id: number;
   screen_id: number;
@@ -14,7 +14,7 @@ export interface Showtime {
 }
 
 // Seat type from API
-export interface APISeat {
+interface APISeat {
   seat_id: number;
   row_label: string;
   seat_number: number;
@@ -102,14 +102,14 @@ export const publicApi = {
 };
 
 // Bookings API - Two-step booking flow
-export interface ReserveSeatRequest {
+interface ReserveSeatRequest {
   user_id: string;
   screen_id: number;
   seat_ids: number[];
   price_per_seat: number;
 }
 
-export interface ReserveSeatResponse {
+interface ReserveSeatResponse {
   success: boolean;
   booking_id?: number;
   payment_deadline?: string;
@@ -118,12 +118,12 @@ export interface ReserveSeatResponse {
   unavailable_seats?: number[];
 }
 
-export interface ConfirmPaymentRequest {
+interface ConfirmPaymentRequest {
   booking_id: number;
   payment_intent_id?: string;
 }
 
-export interface ConfirmPaymentResponse {
+interface ConfirmPaymentResponse {
   success: boolean;
   message: string;
   booking_id?: number;

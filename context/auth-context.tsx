@@ -12,7 +12,7 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
-export interface AuthUser {
+interface AuthUser {
   id: string;
   email: string;
   user_name?: string;

@@ -12,6 +12,7 @@ import { useAuth } from '@/context/auth-context';
 
 import Image from 'next/image';
 import type { Movie } from '@/types/api';
+import type { BookingDate } from '@/lib/constants/movies';
 
 type SeatStatus = 'available' | 'reserved' | 'selected' | 'locked';
 
@@ -21,13 +22,6 @@ interface Seat {
   col: number;
   status: SeatStatus;
   price?: number;
-}
-
-interface BookingDate {
-  day: number;
-  month: string;
-  dayName: string;
-  fullDate?: string;
 }
 
 interface Showtime {

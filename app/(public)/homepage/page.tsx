@@ -27,8 +27,8 @@ export default function HomePage() {
 
         const [heroData, nowScreening, comingSoon, promoData] = await Promise.all([
           publicApi.getHeroCarousel(),
-          moviesApi.getMovies(0, 10, 'NOW_SCREENING'),
-          moviesApi.getMovies(0, 10, 'COMING_SOON'),
+          moviesApi.getMovies(0, 10, 'now_showing'),
+          moviesApi.getMovies(0, 10, 'coming_soon'),
           publicApi.getPromoEvents(),
         ]);
 

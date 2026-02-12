@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 
-export interface AuthUser {
+interface AuthUser {
   id: string;
   email: string;
   user_name?: string;
@@ -63,21 +63,21 @@ export async function signInWithGoogle() {
 }
 
 /** Sign out */
-export async function signOut() {
+async function signOut() {
   const supabase = createClient();
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }
 
 /** Get current session */
-export async function getSession(): Promise<Session | null> {
+async function getSession(): Promise<Session | null> {
   const supabase = createClient();
   const { data } = await supabase.auth.getSession();
   return data.session;
 }
 
 /** Get current user */
-export async function getCurrentUser(): Promise<AuthUser | null> {
+async function getCurrentUser(): Promise<AuthUser | null> {
   const supabase = createClient();
   const { data } = await supabase.auth.getUser();
   return data.user ? mapUser(data.user) : null;

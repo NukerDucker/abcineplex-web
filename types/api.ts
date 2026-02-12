@@ -42,7 +42,7 @@ export interface HeroSlide {
   display_order: number;
 }
 
-export interface PromoEvent {
+interface PromoEvent {
   id: number;
   title: string;
   is_active: boolean;

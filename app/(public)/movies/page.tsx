@@ -19,7 +19,7 @@ export default function MoviesPage() {
         setLoading(true);
         setError(null);
 
-        const status = activeTab === 'now' ? 'NOW_SCREENING' : 'COMING_SOON';
+        const status = activeTab === 'now' ? 'now_showing' : 'coming_soon';
         const data = await moviesApi.getMovies(0, 50, status);
 
         setMovies(data || []);
